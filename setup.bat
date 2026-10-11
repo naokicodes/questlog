@@ -54,7 +54,7 @@ popd
 
 echo.
 echo  Setup finished. Next:
-echo    1. Copy the login token above somewhere safe for a minute.
+echo    1. Your login token is printed above and saved in the secrets folder.
 echo    2. Open ActivityWatch once from the Start menu so it starts tracking.
 echo    3. Double-click run.bat to start Questlog, then log in with the token.
 echo.

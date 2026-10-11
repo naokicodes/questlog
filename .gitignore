@@ -1,4 +1,5 @@
 # Personal data: never commit
+secrets/
 server/data.db
 server/data.db-*
 server/media/

@@ -8,6 +8,7 @@ uv run python manage.py backup --dest C:\\path\\to\\backups
 """
 
 import argparse
+import re
 import shutil
 import sys
 from datetime import datetime
@@ -17,6 +18,8 @@ from app import aw, db
 from app.auth import create_device
 from app.config import load_config
 from app.days import day_for, day_start, now
+
+SECRETS_DIR = Path(__file__).resolve().parent.parent / "secrets"
 
 
 def cmd_init(cfg) -> None:
@@ -32,13 +35,28 @@ def cmd_init(cfg) -> None:
         print("Added starter skills and daily quests.")
 
 
+def save_token(name: str, token: str) -> Path:
+    """Writes the token to secrets/<name>.token (gitignored). Never overwrites an old one."""
+    SECRETS_DIR.mkdir(exist_ok=True)
+    slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-") or "device"
+    path = SECRETS_DIR / f"{slug}.token"
+    n = 2
+    while path.exists():
+        path = SECRETS_DIR / f"{slug}-{n}.token"
+        n += 1
+    path.write_text(token + "\n", encoding="utf-8")
+    return path
+
+
 def print_token(name: str, kind: str, token: str) -> None:
+    path = save_token(name, token)
     print()
     print(f"Login token for {name} ({kind}):")
     print()
     print(f"    {token}")
     print()
-    print("Paste it on the login page. It is shown only once, so copy it now.")
+    print(f"Also saved to {path}")
+    print("That folder is gitignored, so the token never goes to GitHub.")
 
 
 def cmd_first_run(cfg) -> None:
