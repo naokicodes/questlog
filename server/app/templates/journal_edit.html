@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit entry' if entry.id else 'New entry' }} in Questlog{% endblock %}
+{% block content %}
+<h1>{{ 'Edit entry' if entry.id else 'New entry' }}</h1>
+<form class="stack" method="post" action="{{ '/journal/' ~ entry.id if entry.id else '/journal' }}" enctype="multipart/form-data">
+  <div class="row">
+    <label>Title
+      <input type="text" name="title" value="{{ entry.title }}">
+    </label>
+    <label>Day
+      <input type="date" name="day" value="{{ entry.day }}" required>
+    </label>
+  </div>
+  <label>Entry <span class="muted small">(Markdown)</span>
+    <textarea name="body_md">{{ entry.body_md }}</textarea>
+  </label>
+  <label>Tags
+    <input type="text" name="tags" value="{{ entry.tags }}" placeholder="review, music">
+  </label>
+  <label>Add photos or recordings
+    <input type="file" name="files" accept="image/*,audio/*" multiple>
+  </label>
+  {% if attachments %}<p class="muted small">Already attached: {{ attachments | length }}.</p>{% endif %}
+  <div class="toolbar">
+    <button type="submit">Save entry</button>
+    <a class="button quiet" href="{{ '/journal/' ~ entry.id if entry.id else '/journal' }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

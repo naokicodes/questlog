@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Journal in Questlog{% endblock %}
+{% block content %}
+<h1>Journal</h1>
+<div class="toolbar">
+  <form method="get" action="/journal">
+    <input type="search" name="q" value="{{ q }}" placeholder="Search entries" aria-label="Search entries">
+  </form>
+  <a class="button" href="/journal/new?kind=evening">Evening review</a>
+  <a class="button quiet" href="/journal/new">New entry</a>
+</div>
+{% if entries %}
+<ul class="entries">
+  {% for e in entries %}
+  <li>
+    <a href="/journal/{{ e.id }}">{{ e.title or 'Untitled' }}</a>
+    <div class="muted small">{{ e.day | day_label }}{% if e.attachments %}, {{ e.attachments }} {{ 'file' if e.attachments == 1 else 'files' }}{% endif %}{% if e.tags %}, {{ e.tags }}{% endif %}</div>
+  </li>
+  {% endfor %}
+</ul>
+{% elif q %}
+<p class="muted">Nothing matches "{{ q }}". Try fewer words.</p>
+{% else %}
+<p class="muted">No entries yet. Start with tonight's evening review, or snap a page of your paper journal.</p>
+{% endif %}
+{% endblock %}

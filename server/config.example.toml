@@ -1,0 +1,17 @@
+# Copy this file to config.toml (setup.bat does it for you) and edit config.toml.
+# config.toml is gitignored, so your real settings never end up on GitHub.
+
+[server]
+db_path = "data.db"     # relative to the server folder
+media_dir = "media"     # journal photos, recordings, quest proof
+
+[day]
+rollover_hour = 4       # a "day" runs from 4:00 am to 3:59 am
+open_weekdays = [7]     # ISO weekdays, Mon = 1 ... Sun = 7. The gate stays open on these days.
+
+[gate]
+emergency_minutes = 15  # how long an emergency unlock lasts
+emergency_per_week = 3  # how many emergency unlocks per week (Mon-Sun)
+
+[activitywatch]
+url = "http://localhost:5600"

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#15202b">
+  <title>{% block title %}Questlog{% endblock %}</title>
+  <link rel="manifest" href="/static/manifest.webmanifest">
+  <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/static/icon-192.png">
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/">Questlog</a>
+    {% if device %}
+    <nav aria-label="Main">
+      <a href="/" {% if active == 'today' %}aria-current="page"{% endif %}>Today</a>
+      <a href="/journal" {% if active == 'journal' %}aria-current="page"{% endif %}>Journal</a>
+      <a href="/quests" {% if active == 'quests' %}aria-current="page"{% endif %}>Quests</a>
+    </nav>
+    {% endif %}
+  </header>
+  <main>
+    {% if error %}<p class="flash error" role="alert">{{ error }}</p>{% endif %}
+    {% if notice %}<p class="flash" role="status">{{ notice }}</p>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  <script>
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
+  </script>
+</body>
+</html>

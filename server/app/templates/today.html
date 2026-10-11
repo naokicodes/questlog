@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block content %}
+{% set state = gate.state %}
+<section class="gate {{ 'open' if state == 'OPEN' else ('emergency' if state == 'EMERGENCY' else '') }}" aria-live="polite">
+  {% if state == 'OPEN' %}
+    <p class="word">Open</p>
+    <p class="why">{{ 'Rest day.' if gate.reason == 'Rest day' else 'Required quests done.' }} Phone apps are free until {{ gate.expires_at | clock }}.</p>
+  {% elif state == 'EMERGENCY' %}
+    <p class="word">Unlocked</p>
+    <p class="why">Emergency unlock until {{ gate.expires_at | clock }}: {{ gate.reason }}</p>
+    <p class="muted small">Still left: {{ gate.remaining | join(', ') }}</p>
+  {% else %}
+    <p class="word">Locked</p>
+    <p class="why">{{ gate.remaining | length }} required {{ 'quest' if gate.remaining | length == 1 else 'quests' }} left: {{ gate.remaining | join(', ') }}</p>
+  {% endif %}
+</section>
+<p class="muted small">{{ snap.day | day_label }}. {{ done_count }} of {{ quests | length }} quests done.
+  {% if not snap.aw_ok %}ActivityWatch isn't running, so auto quests can't be checked. Start it from the Start menu.{% endif %}</p>
+
+<h2>Quests</h2>
+{% if quests %}
+<ul class="quests">
+  {% for q in quests %}
+  <li class="quest {{ 'done' if q.status == 'done' }}">
+    <span class="mark" aria-hidden="true"></span>
+    <div>
+      <div class="title">{{ q.title }}</div>
+      <div class="meta">
+        {{- q.skill or 'No skill' }}, {{ 'required' if q.required else 'optional' }}.
+        {%- if q.status == 'done' %} Done at {{ q.completed_at | clock }}{% if q.completed_via == 'laptop-override' %} (marked by hand){% endif %}.
+        {%- elif q.verify == 'auto' and q.rule %} Checks {{ q.rule.apps | join(', ') or 'window titles' }}.
+        {%- elif q.needs_proof %} Needs a photo or recording.
+        {%- endif %}
+      </div>
+      {% if q.verify == 'auto' and q.rule and q.status != 'done' %}
+        {% set pct = ((q.minutes or 0) / q.rule.min_minutes * 100) if q.rule.min_minutes else 0 %}
+        <div class="bar" role="progressbar" aria-valuenow="{{ pct | round | int }}" aria-valuemin="0" aria-valuemax="100"><span style="width: {{ [pct, 100] | min }}%"></span></div>
+        <div class="meta">{{ q.minutes | minutes }} of {{ q.rule.min_minutes }} min</div>
+      {% endif %}
+    </div>
+    <div class="actions">
+      {% if q.status != 'done' %}
+        {% if q.verify != 'auto' %}
+        <form class="inline" method="post" action="/quests/{{ q.id }}/done" enctype="multipart/form-data">
+          {% if q.needs_proof %}<input type="file" name="proof" accept="image/*,audio/*" required aria-label="Proof for {{ q.title }}">{% endif %}
+          <button type="submit">Mark done</button>
+        </form>
+        {% elif device.kind == 'laptop' %}
+        <form class="inline" method="post" action="/quests/{{ q.id }}/done" enctype="multipart/form-data">
+          <button type="submit" class="quiet">Mark done by hand</button>
+        </form>
+        {% endif %}
+      {% elif device.kind == 'laptop' %}
+        <form class="inline" method="post" action="/quests/{{ q.id }}/undo">
+          <button type="submit" class="quiet">Undo</button>
+        </form>
+      {% endif %}
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="muted">No quests today. Add some on the <a href="/quests">Quests</a> page.</p>
+{% endif %}
+
+<h2>Session</h2>
+{% if active_session %}
+<div class="session">
+  <p class="running">{{ active_session.skill }} since {{ active_session.started_at | clock }}</p>
+  {% if active_session.begin_action %}<p class="muted small">Started with: {{ active_session.begin_action }}</p>{% endif %}
+  <form class="stack" method="post" action="/sessions/{{ active_session.id }}/end">
+    <label>Ending action
+      <input type="text" name="end_action" placeholder="Where you stopped and the next step">
+    </label>
+    <label>Note <span class="muted small">(needed for sessions over 2 hours)</span>
+      <input type="text" name="note">
+    </label>
+    <div><button type="submit">End session</button></div>
+  </form>
+</div>
+{% else %}
+<form class="stack" method="post" action="/sessions/start">
+  <div class="row">
+    <label>Skill
+      <select name="skill_id" required>
+        {% for s in skills %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Beginning action
+      <input type="text" name="begin_action" placeholder="The first thing you'll do">
+    </label>
+  </div>
+  <div><button type="submit">Start session</button></div>
+</form>
+{% endif %}
+{% if sessions_today %}
+<table class="minutes">
+  {% for s in sessions_today %}
+  <tr><td>{{ s.skill }}, {{ s.started_at | clock }}{% if s.end_action %}<br><span class="muted small">{{ s.end_action }}</span>{% endif %}</td><td>{{ s.minutes | minutes }}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+<h2>Plan a quest</h2>
+<form class="stack" method="post" action="/quests/one-off">
+  <label>Quest
+    <input type="text" name="title" placeholder="e.g. Finish plate 4 dimensions" required>
+  </label>
+  <div class="row">
+    <label>Day
+      <input type="date" name="day" value="{{ tomorrow }}" required>
+    </label>
+    <label>Skill
+      <select name="skill_id">
+        <option value="">None</option>
+        {% for s in skills %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Checked by
+      <select name="verify">
+        <option value="manual">Ticking it off</option>
+        <option value="photo">A photo or recording</option>
+      </select>
+    </label>
+  </div>
+  <label class="check"><input type="checkbox" name="required" checked> Required to open the gate</label>
+  <div><button type="submit">Add quest</button></div>
+</form>
+
+<h2>Laptop today</h2>
+{% if top_apps %}
+<table class="minutes">
+  {% for app, mins in top_apps %}<tr><td>{{ app }}</td><td>{{ mins | minutes }}</td></tr>{% endfor %}
+</table>
+<p class="muted small">Active time only. Away-from-keyboard time isn't counted.</p>
+{% elif snap.aw_ok %}
+<p class="muted">No active time recorded yet today.</p>
+{% else %}
+<p class="muted">Start ActivityWatch to see your laptop time here.</p>
+{% endif %}
+
+{% if phone_top %}
+<h2>Phone today</h2>
+<table class="minutes">
+  {% for p in phone_top %}<tr><td>{{ p.label or p.package }}</td><td>{{ (p.seconds / 60) | minutes }}</td></tr>{% endfor %}
+</table>
+{% endif %}
+
+{% if state == 'LOCKED' %}
+<details>
+  <summary>Emergency unlock ({{ emergencies_left }} left this week)</summary>
+  <form class="stack" method="post" action="/gate/emergency">
+    <label>Reason
+      <input type="text" name="reason" placeholder="Why you need the phone right now" required>
+    </label>
+    <div><button type="submit" class="danger" {% if emergencies_left == 0 %}disabled{% endif %}>Unlock for {{ emergency_minutes }} minutes</button></div>
+    <p class="muted small">Every unlock is logged with its reason.</p>
+  </form>
+</details>
+{% endif %}
+
+{% if device %}
+<form method="post" action="/logout" style="margin-top: 3rem"><button type="submit" class="quiet">Log out of this device</button></form>
+{% endif %}
+{% endblock %}

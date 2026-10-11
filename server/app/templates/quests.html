@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Quests in Questlog{% endblock %}
+{% block content %}
+<h1>Daily quests</h1>
+<p class="muted">These repeat on the days you pick. Changes show up on today's list right away. Removing one keeps today's copy.</p>
+
+{% if templates_list %}
+<ul class="quests">
+  {% for t in templates_list %}
+  <li class="quest">
+    <span class="mark" aria-hidden="true"></span>
+    <div>
+      <div class="title">{{ t.title }}</div>
+      <div class="meta">
+        {{ t.skill or 'No skill' }}, {{ 'required' if t.required else 'optional' }}. {{ t.days_label }}.
+        {% if t.verify == 'auto' and t.rule %}
+          Done after {{ t.rule.min_minutes }} active min in {{ t.rule.apps | join(', ') or 'any app' }}{% if t.rule.title_regex %} with titles matching <code>{{ t.rule.title_regex }}</code>{% endif %}.
+        {% elif t.verify == 'photo' %}
+          Needs a photo or recording.
+        {% else %}
+          Ticked off by hand. From the phone it needs a photo or recording.
+        {% endif %}
+      </div>
+    </div>
+    <div class="actions">
+      <form class="inline" method="post" action="/quests/templates/{{ t.id }}/archive">
+        <button type="submit" class="quiet">Remove</button>
+      </form>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="muted">No daily quests yet. Add your first one below.</p>
+{% endif %}
+
+<h2>Add a daily quest</h2>
+<form class="stack" method="post" action="/quests/templates">
+  <label>Quest
+    <input type="text" name="title" placeholder="e.g. AutoCAD plates, 60 min" required>
+  </label>
+  <div class="row">
+    <label>Skill
+      <select name="skill_id">
+        <option value="">None</option>
+        {% for s in skills %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Checked by
+      <select name="verify">
+        <option value="manual">Ticking it off</option>
+        <option value="photo">A photo or recording</option>
+        <option value="auto">Laptop time (ActivityWatch)</option>
+      </select>
+    </label>
+  </div>
+  <fieldset>
+    <legend>Laptop time rule (only for laptop-time quests)</legend>
+    <div class="row">
+      <label>App names
+        <input type="text" name="apps" placeholder="acad.exe, Code.exe">
+      </label>
+      <label>Minutes needed
+        <input type="number" name="min_minutes" min="1" placeholder="60">
+      </label>
+    </div>
+    <label>Window title pattern <span class="muted small">(optional regex)</span>
+      <input type="text" name="title_regex" placeholder="e.g. questlog|EngiFlow">
+    </label>
+    <p class="muted small">Check the exact app names under "Laptop today" on the Today page, or run <code>uv run python manage.py aw-today</code>.</p>
+  </fieldset>
+  <fieldset>
+    <legend>Days</legend>
+    <div class="days">
+      {% for n, label in weekdays %}
+      <label class="check"><input type="checkbox" name="weekdays" value="{{ n }}" {% if n <= 6 %}checked{% endif %}> {{ label }}</label>
+      {% endfor %}
+    </div>
+  </fieldset>
+  <label class="check"><input type="checkbox" name="required" checked> Required to open the gate</label>
+  <div><button type="submit">Add daily quest</button></div>
+</form>
+{% endblock %}

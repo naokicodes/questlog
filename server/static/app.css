@@ -1,0 +1,191 @@
+/* Questlog. One column, quiet chrome; the gate banner is the loud part. */
+:root {
+  --paper: #eef1ee;
+  --surface: #fbfcfb;
+  --ink: #15202b;
+  --muted: #5a6772;
+  --line: #d3dad6;
+  --action: #1f4e79;
+  --action-ink: #ffffff;
+  --locked: #9b2226;
+  --open: #2b6e45;
+  --emergency: #a8650a;
+  --radius: 8px;
+  --font: "Segoe UI Variable Text", "Segoe UI", Roboto, system-ui, -apple-system, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #101418;
+    --surface: #171d22;
+    --ink: #e4e9ec;
+    --muted: #93a0aa;
+    --line: #28313a;
+    --action: #8db8e3;
+    --action-ink: #0d1a26;
+    --locked: #e2777b;
+    --open: #69c08f;
+    --emergency: #e3a34a;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.5 var(--font);
+  font-variant-numeric: tabular-nums;
+  padding: env(safe-area-inset-top, 0) 0 env(safe-area-inset-bottom, 0);
+}
+a { color: var(--action); }
+:focus-visible { outline: 3px solid var(--action); outline-offset: 2px; }
+
+.top {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 0.5rem;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.brand { font-weight: 800; font-size: 1.1rem; color: var(--ink); text-decoration: none; }
+.top nav { display: flex; gap: 1.1rem; }
+.top nav a { color: var(--muted); text-decoration: none; font-weight: 600; }
+.top nav a[aria-current="page"] { color: var(--ink); box-shadow: inset 0 -2px 0 var(--ink); }
+
+main { max-width: 42rem; margin: 0 auto; padding: 0.5rem 1.25rem 4rem; }
+h1 { font-size: 1.6rem; line-height: 1.2; margin: 1rem 0 0.5rem; }
+h2 { font-size: 1.05rem; margin: 2.25rem 0 0.6rem; }
+p { margin: 0.4rem 0; }
+.muted { color: var(--muted); }
+.small { font-size: 0.875rem; }
+
+.flash {
+  border-left: 4px solid var(--open);
+  background: var(--surface);
+  padding: 0.6rem 0.9rem;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  margin: 0.75rem 0;
+}
+.flash.error { border-left-color: var(--locked); }
+
+/* The gate banner */
+.gate {
+  --state: var(--locked);
+  margin: 0.75rem 0 0.5rem;
+  padding: 1.1rem 1.25rem 1.2rem;
+  background: var(--surface);
+  border-left: 10px solid var(--state);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+.gate.open { --state: var(--open); }
+.gate.emergency { --state: var(--emergency); }
+.gate .word {
+  margin: 0;
+  font-size: clamp(2.6rem, 11vw, 3.75rem);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--state);
+}
+.gate .why { margin-top: 0.45rem; font-weight: 600; }
+
+/* Quests */
+.quests { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--line); }
+.quest {
+  display: grid;
+  grid-template-columns: 1.5rem 1fr;
+  gap: 0.25rem 0.75rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.mark {
+  width: 1.25rem; height: 1.25rem; margin-top: 0.15rem;
+  border: 2px solid var(--muted); border-radius: 50%;
+}
+.quest.done .mark { background: var(--open); border-color: var(--open); }
+.quest.done .title { color: var(--muted); text-decoration: line-through; }
+.quest .title { font-weight: 650; }
+.quest .meta { color: var(--muted); font-size: 0.875rem; }
+.quest .actions { grid-column: 2; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.35rem; }
+.bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-top: 0.35rem; max-width: 16rem; }
+.bar span { display: block; height: 100%; background: var(--action); }
+
+/* Forms */
+form.stack { display: grid; gap: 0.75rem; }
+form.inline { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+label { display: grid; gap: 0.25rem; font-weight: 600; font-size: 0.925rem; }
+label.check { display: flex; align-items: center; gap: 0.5rem; font-weight: 500; }
+input[type="text"], input[type="password"], input[type="date"], input[type="number"],
+input[type="search"], select, textarea {
+  width: 100%;
+  font: inherit;
+  font-weight: 400;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.55rem 0.7rem;
+}
+textarea { min-height: 18rem; line-height: 1.55; resize: vertical; }
+input[type="file"] { font: inherit; max-width: 100%; }
+.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 0.75rem; }
+.days { display: flex; flex-wrap: wrap; gap: 0.25rem 0.9rem; }
+fieldset { border: 1px solid var(--line); border-radius: var(--radius); padding: 0.75rem 1rem; margin: 0; }
+legend { font-weight: 600; padding: 0 0.25rem; }
+
+button, .button {
+  font: inherit;
+  font-weight: 650;
+  border: 1px solid var(--action);
+  background: var(--action);
+  color: var(--action-ink);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.95rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+button.quiet, .button.quiet { background: transparent; color: var(--action); }
+button.danger { background: transparent; color: var(--locked); border-color: var(--locked); }
+
+/* Session */
+.session {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+}
+.session .running { font-weight: 700; }
+
+/* Simple tables for minutes */
+table.minutes { width: 100%; border-collapse: collapse; font-size: 0.925rem; }
+table.minutes td { padding: 0.35rem 0; border-bottom: 1px solid var(--line); }
+table.minutes td:last-child { text-align: right; color: var(--muted); white-space: nowrap; }
+
+details { margin-top: 2.25rem; }
+summary { cursor: pointer; font-weight: 650; }
+details[open] summary { margin-bottom: 0.6rem; }
+
+/* Journal */
+.entries { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--line); }
+.entries li { padding: 0.75rem 0; border-bottom: 1px solid var(--line); }
+.entries a { font-weight: 650; text-decoration: none; color: var(--ink); }
+.prose { line-height: 1.65; overflow-wrap: anywhere; }
+.prose h2 { margin-top: 1.5rem; }
+.prose table { border-collapse: collapse; }
+.prose td, .prose th { border: 1px solid var(--line); padding: 0.3rem 0.5rem; }
+.gallery { display: grid; gap: 0.75rem; margin-top: 1.5rem; }
+.gallery img { width: 100%; height: auto; border-radius: var(--radius); display: block; }
+.gallery audio { width: 100%; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin: 0.75rem 0 1.25rem; }
+.toolbar form { flex: 1 1 14rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; transition: none !important; }
+}

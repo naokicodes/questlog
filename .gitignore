@@ -1,0 +1,29 @@
+# Personal data: never commit
+server/data.db
+server/data.db-*
+server/media/
+server/config.toml
+.env
+*.token
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Android (Phase 4)
+android/**/build/
+android/.gradle/
+android/local.properties
+android/.idea/
+*.jks
+*.keystore
+*.apk
+*.aab
+
+# OS and editors
+.DS_Store
+Thumbs.db
+.vscode/

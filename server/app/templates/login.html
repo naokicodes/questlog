@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Log in to Questlog{% endblock %}
+{% block content %}
+<h1>Log in to this device</h1>
+<p class="muted">Paste the device token that <code>setup.bat</code> or <code>phone-access.bat</code> printed. This device stays logged in for a year.</p>
+<form class="stack" method="post" action="/login">
+  <label>Device token
+    <input type="password" name="token" autocomplete="off" required autofocus>
+  </label>
+  <div><button type="submit">Log in</button></div>
+</form>
+<p class="muted small">Lost it? On the laptop, run <code>uv run python manage.py add-device NAME --kind laptop</code> (or <code>--kind phone</code>) from the server folder.</p>
+{% endblock %}

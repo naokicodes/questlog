@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ entry.title or 'Entry' }} in Questlog{% endblock %}
+{% block content %}
+<h1>{{ entry.title or 'Untitled' }}</h1>
+<p class="muted small">{{ entry.day | day_label }}{% if entry.tags %}, {{ entry.tags }}{% endif %}</p>
+<div class="toolbar">
+  <a class="button quiet" href="/journal/{{ entry.id }}/edit">Edit</a>
+  <a class="button quiet" href="/journal">All entries</a>
+</div>
+<div class="prose">{{ entry.body_md | md | safe }}</div>
+{% if attachments %}
+<div class="gallery">
+  {% for a in attachments %}
+    {% if a.mime.startswith('image/') %}
+      <a href="/media/{{ a.path }}"><img src="/media/{{ a.path }}" alt="{{ a.original_name or 'Photo' }}" loading="lazy"></a>
+    {% else %}
+      <figure style="margin:0"><audio controls preload="none" src="/media/{{ a.path }}"></audio><figcaption class="muted small">{{ a.original_name }}</figcaption></figure>
+    {% endif %}
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
