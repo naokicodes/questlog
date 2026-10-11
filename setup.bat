@@ -17,7 +17,7 @@ if errorlevel 1 (
 )
 
 call :ensure Git.Git "Git"
-call :ensure astral-sh.uv "uv (Python manager)"
+call :ensure astral-sh.uv "uv, the Python manager"
 call :ensure ActivityWatch.ActivityWatch "ActivityWatch"
 call :ensure Tailscale.Tailscale "Tailscale"
 
@@ -62,11 +62,13 @@ pause
 exit /b 0
 
 :ensure
+rem No ( ) blocks here: a label containing ")" would break them.
 winget list --id %~1 -e --accept-source-agreements >nul 2>&1
-if not errorlevel 1 (
-  echo [ok] %~2 is already installed.
-  exit /b 0
-)
+if errorlevel 1 goto :ensure_install
+echo [ok] %~2 is already installed.
+exit /b 0
+
+:ensure_install
 echo [..] Installing %~2...
 winget install --id %~1 -e --silent --accept-package-agreements --accept-source-agreements
 if errorlevel 1 echo [!!] %~2 didn't install. Install it by hand, then run setup.bat again.
